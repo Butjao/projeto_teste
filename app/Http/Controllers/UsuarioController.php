@@ -12,40 +12,28 @@ class UsuarioController extends Controller
      */
     public function index()
     {
-        $arrSituacao = [0 => 'Inativo', 1 => 'Ativo'];
-
-        return view('usuario.index')
-            ->with('arrSituacao', $arrSituacao);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Usuario $usuario)
-    {
-        //
+        return view('usuario.index');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Usuario $usuario)
+    public function deleteData(Request $request)
     {
-        Usuario::where('id', '=', $usuario->id)->delete();
+        Usuario::where('id', '=', $request->id)->delete();
 
         return response(0);
     }
 
-    public function searchData() {
-
+    public function searchData(Request $request) {
         //funcao do ajax vai buscar os dados do model usuario e trazer de volta pro ajax para atualizar a listagem
-        $dados = Usuario::ObtemTodos();
+        $data = Usuario::ObtemTodos($request->filtroTexto, $request->filtroData, $request->filtroSituacao);
+       
         return view('usuario.listagem')
-            ->with('dados', $dados);
+            ->with('data', $data);
     }
 
     public function addData(Request $request) {
-
         $usuario = new Usuario();
         $usuario->nome        = $request->nm_usuario;
         $usuario->email       = $request->email_usuario;

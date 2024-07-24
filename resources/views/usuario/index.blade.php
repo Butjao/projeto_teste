@@ -3,44 +3,40 @@
 @section('conteudo-pagina')
 <div style="width: 100%">
     <div class="form-row" style="margin-top: 30px; margin-left: 2%; margin-right:2%">
-        <div class="col-12" style="border: solid; margin-bottom:50px">
-            <p style="font-size:30px">Cadastro de Usuario</p>
+        <div class="col-12" style=" margin-bottom:5px">
+            <p style="font-size:25px">Cadastro de Usuário</p>
         </div>
 
-        <div class="col-12" style="border: solid; margin-bottom:50px">
+        <div class="col-12 card shadow" style="margin-bottom:50px; padding: 10px">
             <form class="needs-validation" novalidate>
                 @csrf 
                 <div class="form-row">
                     <div class="col-6">
                         <label for="nomeUsuario">Nome</label>
                         <input type="text" id="nm_usuario" class="form-control" id="nomeUsuario" aria-describedby="nameHelp" placeholder="Digite seu nome" required>
-                        <div class="invalid-feedback">
-                            Este campo e obrigatorio.
-                        </div>
+                        <div class="invalid-feedback"> Este campo é obrigatorio.</div>
                     </div>
 
                     <div class="col-6">
                         <label for="emailUsuario">Email</label>
                         <input type="email" id="email_usuario" class="form-control" id="emailUsuario" aria-describedby="emailHelp" placeholder="Digite seu email" required>
-                        <div class="invalid-feedback">
-                            Este campo e obrigatorio.
-                        </div>
+                        <div class="invalid-feedback"> Este campo é obrigatorio. </div>
                     </div>
 
                     <div class="col-3">
                         <div class="form-group">
-                            <label for="id_situacao">Situacao</label>
+                            <label for="id_situacao">Situação</label>
                             <select class="form-control" id="id_situacao"  id="id_situacao">
-                            <option value="0">Ativo</option>
-                            <option value="1">Inativo</option>
+                            <option value="1">Ativo</option>
+                            <option value="2">Inativo</option>
                             </select>
                         </div>
                     </div>
                     <div class="col-3">
-                        <label for="data_admicao">Data Admissao</label>
+                        <label for="data_admicao">Data Admissão</label>
                         <input id="data_admicao" class="form-control" type="date" required/>
                         <div class="invalid-feedback">
-                            Este campo e obrigatorio.
+                            Este campo é obrigatório.
                         </div>
                     </div>
 
@@ -50,7 +46,34 @@
                 </div>
             </form>
         </div>
-        <div class="col-12" style="border: solid; margin-bottom:50px" id="container">
+
+        <div class="col-12" style=" margin-bottom:10px">
+            <div class="form-row">
+                <div class="col-3">
+                    <input type="text" id="filtro_texto" class="form-control" id="nomeUsuario" aria-describedby="filtroHelp" placeholder="Filtro">
+                </div>
+                <div class="col-2">
+                    <input id="filtro_data" class="form-control" type="date"/>
+                </div>
+                <div class="col-2">
+                    <div class="form-group">
+                        <select class="form-control" id="filtro_situacao"  id="filtro_situacao">
+                        <option value="">Todos</option>
+                        <option value="1">Ativo</option>
+                        <option value="2">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-1">
+                    <button type="button" class="btn btn-primary" style="width: 100%" onclick="buscarDados()">Filtrar</button>
+                </div>
+                <div class="col-1">
+                    <button type="button" class="btn btn-primary" style="width: 100%" onclick="limparFiltros()">Limpar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12" style="margin-bottom:50px" id="container">
         </div>
     </div>
 </div>
@@ -60,7 +83,6 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         buscarDados();
-        new DataTable('#example');
     });
 
 function limparCampos() {
@@ -69,31 +91,41 @@ function limparCampos() {
     $("#data_admicao").val("");
 }
 
-function buscarDados() {
-    console.log('entrou na funcao buscar');
+function limparFiltros() {
+    $("#filtro_texto").val("");
+    $("#filtro_data").val("");
+    $("#filtro_situacao").val("");
+    buscarDados();
+}
 
-    var csrf_token = $('meta[name="csrf-token"]').attr("content");
-    console.log(csrf_token);
+function buscarDados() {
+    var csrf_token     = $('meta[name="csrf-token"]').attr("content");
+    var filtroTexto    = $('#filtro_texto').val();
+    var filtroData     = $('#filtro_data').val();
+    var filtroSituacao = $('#filtro_situacao').val();
 
     $.ajax({
         url: "/usuario/buscar-dados",
         method: "GET",
         data: {
             _token: csrf_token,
+            filtroTexto: filtroTexto,
+            filtroData: filtroData,
+            filtroSituacao: filtroSituacao
         },
         success: function (response) {
-            console.log(response);
             $("#container").html(response);
-            limparCampos();
+            if(filtroTexto == null && filtroData == null && filtroSituacao == null) {
+                limparCampos();
+            }
         },
         error: function (error) {
-            console.log(response);
+            console.log(error);
         },
     });
 }
 
 function adicionarDados() {
-    console.log('entrou na funcao adicionar');
     var csrf_token = $('meta[name="csrf-token"]').attr("content");
 
     var objNome =  document.getElementById('nm_usuario');
@@ -111,12 +143,11 @@ function adicionarDados() {
             event.preventDefault();
             teste = 1;
         } else {
-                obj.classList.remove('is-invalid');
-            }
+            obj.classList.remove('is-invalid');
+        }
     });
     
     if(teste != 1) {
-        console.log('entrou no ajax');
         $.ajax({
             url: "/usuario/adicionar-dados",
             method: "POST",
@@ -128,18 +159,17 @@ function adicionarDados() {
                 dt_admicao: objData.value,
             },
             success: function (response) {
-                console.log(response);
                 buscarDados();
                 limparCampos();
                 Swal.fire({
-                    title: 'Usuario inserido com sucesso!',
+                    title: 'Usuário inserido com sucesso!',
                     icon: "success"
                 })
             },
             error: function (error) {
                 console.log(error);
                 Swal.fire({
-                    title: 'Erro ao inserir Usuario.',
+                    title: 'Erro ao inserir Usuário.',
                     icon: "error"
                 })
             },
@@ -147,4 +177,44 @@ function adicionarDados() {
     }
 }
 
+function ExcluirDados(id) {
+    Swal.fire({
+        title: 'Deseja excluir este Usuário?',
+        showDenyButton: true,
+        confirmButtonText: 'Sim',
+        denyButtonText: 'Não',
+        customClass: {
+            actions: 'my-actions',
+            confirmButton: 'order-2',
+            denyButton: 'order-3',
+        },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            var csrf_token = $('meta[name="csrf-token"]').attr("content");
+            
+            $.ajax({
+                url: "/usuario/excluir-dados",
+                method: "GET",
+                data: {
+                    _token: csrf_token,
+                    id: id
+                },
+                success: function (response) {
+                    buscarDados();
+                    Swal.fire({
+                        title: 'Usuário excluído com sucesso!',
+                        icon: "success"
+                    })
+                },
+                error: function (error) {
+                    console.log(error);
+                    Swal.fire({
+                        title: 'Erro ao excluir Usuário.',
+                        icon: "error"
+                    })
+                },
+            });
+        }
+    })
+}
 </script>
